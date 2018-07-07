@@ -1,0 +1,119 @@
+<html>
+<head>
+<title>Uzay Çalışması</title>
+<script src="pid.js"></script>
+<script>
+var max_uzaklik = 3500;
+function f3Dt2D(x,y,z,Qx,Qz) {
+ var Qy = 0;
+ Qx *= Math.PI/180;
+ Qz *= Math.PI/180;
+ var xRotQz=x*Math.cos(Qz)+y*Math.sin(Qz);
+ var yRotQz=y*Math.cos(Qz)-x*Math.sin(Qz);
+ //
+ var yRotQzQx=yRotQz*Math.cos(Qx)+z*Math.sin(Qx);
+ var zRotQzQx=z*Math.cos(Qx)-yRotQz*Math.sin(Qx);
+ var xRotQzQxQy=xRotQz*Math.cos(Qy)+zRotQzQx*Math.sin(Qy);
+ 
+ var yRotQzQxQy=yRotQzQx;
+ var zRotQzQxQy=xRotQz*Math.sin(Qy)-zRotQzQx*Math.cos(Qy);
+ //if (zRotQzQxQy <= 0) return false;
+ return {X:xRotQzQxQy,Y:yRotQzQx,R:(zRotQzQxQy+max_uzaklik)/1000};
+}
+
+function CreateDOMElement() {
+ var element = document.createElement("IMG");
+ element.src = "nokta.png";
+ element.style.position = "fixed";
+ element.style.top = "0px";
+ element.style.left = "0px";
+ element.style.color = "white";
+ element.style.width = "10px";
+ element.style.height = "10px";
+ element.appendChild(document.createTextNode("*"));
+ document.body.appendChild(element);
+ return element;
+}
+
+var uzay = {};
+uzay.Dizin = [];
+uzay.Qx = 115;
+uzay.Qz = 67;
+uzay.ITE = 1;
+
+function kurulum() {
+ var kkk = 3000;
+ ATA["UN"].konum0S = [-kkk,-kkk,-kkk];
+ ATA["UN"].konumSS = [kkk,kkk,kkk];
+ ATA["UN"].YC = [0,0,0];
+ window.onkeypress = function(e) {
+  e = e || window.event;
+  var t_k = e.keyCode;
+  var t_ = String.fromCharCode(t_k).toUpperCase();
+  switch(t_) {
+   case "4":uzay.Qz+=5;break;
+   case "6":uzay.Qz-=5;break;
+   case "2":uzay.Qx+=5;break;
+   case "8":uzay.Qx-=5;break;
+  }
+ };
+ var noktasayi = 20;
+ for (var i=0;i<noktasayi;i++) {
+  var yon_ = 1.05;//*(Math.random()>0.8?1:-1);
+  var UN = {};
+  UN.DE = CreateDOMElement();
+  UN.UN = ATA["UN"]["Oluştur"](3);
+  UN.UN.kutle = 3*Math.random();
+  UN.UN.konum[0] = 1300*Math.sin(i/(noktasayi-1)*2*Math.PI);
+  UN.UN.konum[1] = 1300*Math.cos(i/(noktasayi-1)*2*Math.PI);
+  UN.UN.konum[2] = 250*Math.random();
+  UN.UN.hiz[0] = -yon_*Math.cos(i/(noktasayi-1)*2*Math.PI);
+  UN.UN.hiz[1] = yon_*Math.sin(i/(noktasayi-1)*2*Math.PI);
+  UN.UN.hiz[2] = 0;//yon_*Math.random();
+  
+  UN.F = function() {
+   for (var ite=0;ite<uzay.ITE;ite++) this.UN.I();
+   var xyd = f3Dt2D(this.UN.konum[0],this.UN.konum[1],this.UN.konum[2],uzay.Qx,uzay.Qz);
+   var boyut_ = (10 + Math.pow(this.UN.kutle,1/3)/2.7)*5/Math.pow(xyd.R,1.6);
+   this.DE.style.opacity = 1 - xyd.R/10;
+   this.DE.style.left = (300+(xyd.X/xyd.R)/3 - boyut_/2) + "px";
+   this.DE.style.top = (300+(xyd.Y/xyd.R)/3 - boyut_/2) + "px";
+   this.DE.style.width = boyut_ + "px";
+   this.DE.style.height = boyut_ + "px";
+   /*
+   */
+   /*
+   uzay.gc2d.beginPath();
+   uzay.gc2d.lineWidth = 1;
+   uzay.gc2d.fillStyle = "#FFF05080";
+   uzay.gc2d.arc((300+(xyd.X/xyd.R)/3 - boyut_/2),(300+(xyd.Y/xyd.R)/3 - boyut_/2),boyut_,0*Math.PI,2*Math.PI);
+   uzay.gc2d.fill();
+   uzay.gc2d.stroke();
+   */
+  };
+  uzay.Dizin.push(UN);
+  setTimeout("uzay.F();",10);
+ }
+ 
+ uzay.Dizin[0].UN.konum = [0,0,0];
+ uzay.Dizin[0].UN.hiz = [0,0,0];
+ uzay.Dizin[0].UN.kutle = 300000;
+ uzay.gc2d = document.all.tuval.getContext("2d");
+ /**/
+
+}
+
+uzay.F = function() {
+ //uzay.gc2d.clearRect(0,0,1000,1000);
+ for (var i=0;i<this.Dizin.length;i++) {
+  this.Dizin[i].F();
+ }
+ setTimeout("uzay.F();",5);
+};
+setTimeout("kurulum();",1000);
+</script>
+</head>
+<body>
+<canvas width="800" height="600" id="tuval" style="width:800;height:600;border:1px solid gray;background-color:black;"></canvas>
+</body>
+</html>

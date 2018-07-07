@@ -1,0 +1,78 @@
+<html>
+<head>
+<title>Uzay Çalışması</title>
+<script src="pid.js"></script>
+<script>
+
+function CreateDOMElement() {
+ var element = document.createElement("IMG");
+ element.src = "nokta.png";
+ element.style.position = "fixed";
+ element.style.top = "0px";
+ element.style.left = "0px";
+ element.style.color = "white";
+ element.style.width = "10px";
+ element.style.height = "10px";
+ element.appendChild(document.createTextNode("*"));
+ document.body.appendChild(element);
+ return element;
+}
+
+var uzay = {};
+uzay.Dizin = [];
+ATA["UN"].L = [100,50,50];
+ATA["UN"].YC = [0,0];
+function kurulum() {
+ var kkk = 3000;
+ ATA["UN"].konum0S = [-kkk,-kkk];
+ ATA["UN"].konumSS = [kkk,kkk];
+ var noktasayi = 5;
+ for (var i=0;i<noktasayi;i++) {
+  var yon_ = 1;//1.3*(Math.random()>0.5?1:-1);
+  var UN = {};
+  UN.DE = CreateDOMElement();
+  UN.UN = ATA["UN"]["Oluştur"](2);
+  UN.UN.kutle = 100000000;
+  UN.UN.konum[0] = 1000*Math.sin(i/(noktasayi)*2*Math.PI);
+  UN.UN.konum[1] = 1000*Math.cos(i/(noktasayi)*2*Math.PI);
+  UN.UN.hiz[0] = -yon_*Math.cos(i/(noktasayi)*2*Math.PI);
+  UN.UN.hiz[1] = yon_*Math.sin(i/(noktasayi)*2*Math.PI);
+  
+  UN.F = function() {
+   for (var ite=0;ite<1;ite++) this.UN.I();
+   var boyut_ = 5 + Math.pow(this.UN.kutle,1/3)/100;
+   this.DE.style.left = (300+(this.UN.konum[0])/10 - boyut_/2) + "px";
+   this.DE.style.top = (300+(this.UN.konum[1])/10 - boyut_/2) + "px";
+   this.DE.style.width = boyut_ + "px";
+   this.DE.style.height = boyut_ + "px";
+  };
+  uzay.Dizin.push(UN);
+ }
+ setInterval("uzay.F();",10);
+ document.all.panel0.onmousemove = tasi_nokta;
+ document.all.panel0.onclick = function(e) {console.log(e);};
+ /*
+ uzay.Dizin[0].UN.konum = [0,0];
+ uzay.Dizin[0].UN.hiz = [0,0];
+ uzay.Dizin[0].UN.kutle = 100;
+ */
+
+}
+
+var tasi_nokta = function(e) {
+ e = e || window.event;
+ uzay.Dizin[0].UN.konum = [e.offsetX*10-3000,e.offsetY*10-3000];
+ uzay.Dizin[0].UN.hiz = [0,0];
+ uzay.Dizin[0].UN.kutle = 100*uzay.Dizin[1].UN.kutle;
+};
+uzay.F = function() {
+ for (var i=0;i<this.Dizin.length;i++) {
+  this.Dizin[i].F();
+ }
+};
+setTimeout("kurulum();",1000);
+</script>
+</head>
+<body>
+<div style="position:fixed;left:0;top:0;width:650px;height:650;background-color:green;z-index:0;border:1px solid red;" id="panel0">.</div>
+</html>
